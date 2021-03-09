@@ -7,6 +7,6 @@ namespace ODataBenchmark.DataModel
 		public string Login { get; set; }
 		public string PasswordHash { get; set; }
 
-		public IList<Project> Owns { get; set; }
+		public virtual IList<Project> Owns { get; set; }
 	}
 }

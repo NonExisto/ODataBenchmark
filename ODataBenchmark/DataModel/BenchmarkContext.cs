@@ -29,13 +29,16 @@ namespace ODataBenchmark.DataModel
 
 			modelBuilder.Entity<Emploee>().OwnsOne(c => c.HomeAddress).WithOwner();
 			modelBuilder.Entity<Emploee>().HasMany(c => c.JobTitles).WithMany(c => c.Emploees);
+			modelBuilder.Entity<Emploee>().HasData(fakeData.Emploees);
 
-			modelBuilder.Entity<Manager>().HasMany(c => c.Subordinates).WithOne(c => c.Manager);
+			modelBuilder.Entity<Manager>().HasMany(c => c.Subordinates).WithMany(c => c.Managers);
+			modelBuilder.Entity<Manager>().HasData(fakeData.Managers);
+			modelBuilder.Entity<Customer>().HasData(fakeData.Customers);
 			modelBuilder.Entity<Project>().HasMany(c => c.Members).WithMany(e => e.WorksOn);
 			modelBuilder.Entity<Project>().HasOne(c => c.Superviser).WithMany(e => e.Supervise);
 			modelBuilder.Entity<Project>().HasMany(c => c.Owners).WithMany(e => e.Owns);
-			modelBuilder.Entity<Project>().HasMany(c => c.Scopes);
-			modelBuilder.Entity<Customer>();
+			modelBuilder.Entity<Project>().HasMany(c => c.Scopes).WithMany("ProjectScopes");
+			modelBuilder.Entity<Project>().HasData(fakeData.Projects);
 		}
 	}
 }
