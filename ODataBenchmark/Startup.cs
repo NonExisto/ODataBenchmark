@@ -1,15 +1,15 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.OData.Batch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Net.Http.Headers;
+using Microsoft.OData;
 using Microsoft.OpenApi.Models;
 using ODataBenchmark.DataModel;
-using System.Linq;
 
 namespace ODataBenchmark
 {
@@ -27,12 +27,11 @@ namespace ODataBenchmark
 		{
 			services.AddDbContext<BenchmarkContext>(opt => opt.UseInMemoryDatabase("BookLists"));
 			services.AddControllers();
-			services.AddOData(opt => opt.AddModel("odata", EdmModelBuilder.GetEdmModel()).Filter().Expand().OrderBy().Select().SetMaxTop(200));
+			services.AddOData(opt => opt.Count().Filter().Expand().OrderBy().Select().SetMaxTop(200).AddModel("odata", EdmModelBuilder.GetEdmModel(),
+				builder => builder.AddService<ODataBatchHandler, DefaultODataBatchHandler>(Microsoft.OData.ServiceLifetime.Singleton))
+			);
 
-			services.AddSwaggerGen(c =>
-			{
-				c.SwaggerDoc("v1", new OpenApiInfo { Title = "ODataBenchmark", Version = "v1" });
-			});
+			services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "ODataBenchmark", Version = "v1" }));
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,16 +40,15 @@ namespace ODataBenchmark
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
-				app.UseSwagger();
-				app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ODataBenchmark v1"));
 			}
 
+			app.UseODataBatching();
+			app.UseSwagger();
+			app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "OData 8.x OpenAPI"));
 			app.UseRouting();
 
-			app.UseEndpoints(endpoints =>
-			{
-				endpoints.MapControllers();
-			});
+
+			app.UseEndpoints(endpoints => endpoints.MapControllers());
 		}
 	}
 }
