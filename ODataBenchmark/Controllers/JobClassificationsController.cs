@@ -23,12 +23,12 @@ namespace ODataBenchmark.Controllers
 
 		[HttpGet]
 		[EnableQuery]
-		public IActionResult Get(long id)
+		public IActionResult Get(long key)
 		{
-			var value = _benchmarkContext.JobClassifications.FirstOrDefault(p => p.Id == id);
+			var value = _benchmarkContext.JobClassifications.FirstOrDefault(p => p.Id == key);
 			if (value == null)
 			{
-				return NotFound($"Not found entity with key {id}");
+				return NotFound($"Not found entity with key {key}");
 			}
 			return base.Ok(value);
 		}

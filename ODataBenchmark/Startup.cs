@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Batch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Net.Http.Headers;
 using Microsoft.OData;
 using Microsoft.OpenApi.Models;
 using ODataBenchmark.DataModel;
+using System.Linq;
 
 namespace ODataBenchmark
 {
@@ -27,10 +30,20 @@ namespace ODataBenchmark
 		{
 			services.AddDbContext<BenchmarkContext>(opt => opt.UseInMemoryDatabase("BookLists"));
 			services.AddControllers();
-			services.AddOData(opt => opt.Count().Filter().Expand().OrderBy().Select().SetMaxTop(200).AddModel("odata", EdmModelBuilder.GetEdmModel(),
-				builder => builder.AddService<ODataBatchHandler, DefaultODataBatchHandler>(Microsoft.OData.ServiceLifetime.Singleton))
-			);
+			services.AddOData(opt => opt.Count().Filter().Expand().Select().OrderBy().SetMaxTop(200).AddModel("odata", EdmModelBuilder.GetEdmModel()));
 
+			//services.AddMvcCore(options =>
+			//{
+			//	foreach (var outputFormatter in options.OutputFormatters.OfType<OutputFormatter>().Where(x => x.SupportedMediaTypes.Count == 0))
+			//	{
+			//		outputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/prs.odatatestxx-odata"));
+			//	}
+
+			//	foreach (var inputFormatter in options.InputFormatters.OfType<InputFormatter>().Where(x => x.SupportedMediaTypes.Count == 0))
+			//	{
+			//		inputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/prs.odatatestxx-odata"));
+			//	}
+			//});
 			services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "ODataBenchmark", Version = "v1" }));
 		}
 
