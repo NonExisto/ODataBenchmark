@@ -8,7 +8,7 @@ namespace ODataBenchmark.DataModel
 		public static IEdmModel GetEdmModel()
 		{
 			var builder = new ODataConventionModelBuilder();
-			builder.EntitySet<Emploee>("Emploees");
+			builder.EntitySet<Employee>("Employees");
 			builder.EntitySet<Person>("People");
 			builder.EntitySet<Customer>("Customers");
 			builder.EntitySet<Project>("Projects");

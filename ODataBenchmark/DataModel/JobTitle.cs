@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ODataBenchmark.DataModel
 {
@@ -14,6 +13,6 @@ namespace ODataBenchmark.DataModel
 
 		public virtual IList<Scope> Scopes { get; set; }
 
-		public virtual IList<Emploee> Emploees { get; set; }
+		public virtual IList<Employee> Employees { get; set; }
 	}
 }

@@ -2,7 +2,7 @@
 
 namespace ODataBenchmark.DataModel
 {
-	public class Emploee : Person
+	public class Employee : Person
 	{
 		public virtual IList<JobTitle> JobTitles { get; set; }
 		public virtual IList<Project> WorksOn { get; set; }

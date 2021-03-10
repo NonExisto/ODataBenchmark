@@ -9,7 +9,7 @@ namespace ODataBenchmark.DataModel
 		public IList<Scope> Scopes { get; private set; }
 		public IList<JobClassification> JobClassifications { get; private set; }
 		public IList<JobTitle> JobTitles { get; private set; }
-		public IList<Emploee> Emploees { get; private set; }
+		public IList<Employee> Employees { get; private set; }
 		public IList<Manager> Managers { get; private set; }
 		public IList<Customer> Customers { get; private set; }
 		public IList<Project> Projects { get; private set; }
@@ -18,7 +18,7 @@ namespace ODataBenchmark.DataModel
 			FillScopes(count * 5);
 			FillJobClassifications(16);
 			FillJobTitles(count >> 2);
-			FillEmploees(count);
+			FillEmployees(count);
 			FilManagers(count >> 3);
 			FilCustomers(count >> 1);
 			FillProjects(count >> 1);
@@ -31,9 +31,9 @@ namespace ODataBenchmark.DataModel
 			   .RuleFor(p => p.Id, _ => id++)
 			   .RuleFor(p => p.Name, f => f.Commerce.Product())
 			   .RuleFor(p => p.Scopes, f => f.PickRandom(Scopes, f.Random.Number(1, 8)))
-			   .RuleFor(p => p.Members, f => f.PickRandom(Emploees, f.Random.Number(1, 12)))
+			   .RuleFor(p => p.Members, f => f.PickRandom(Employees, f.Random.Number(1, 12)))
 			   .RuleFor(p => p.Superviser, f => f.PickRandom(Managers))
-			   .RuleFor(p => p.Owners, f => f.PickRandom(Customers, f.Random.Number(1,3)));
+			   .RuleFor(p => p.Owners, f => f.PickRandom(Customers, f.Random.Number(1, 3)));
 
 			Projects = faker.Generate(count);
 		}
@@ -60,27 +60,27 @@ namespace ODataBenchmark.DataModel
 			   .RuleFor(p => p.LastName, f => f.Person.LastName)
 			   .RuleFor(p => p.JobTitles, f => f.PickRandom(JobTitles, f.Random.Number(1, 3)))
 			   .RuleFor(p => p.PhoneNumber, f => f.Person.Phone)
-			   .RuleFor(p => p.Subordinates, f => f.PickRandom(Emploees, f.Random.Number(3, 12)))
+			   .RuleFor(p => p.Subordinates, f => f.PickRandom(Employees, f.Random.Number(3, 12)))
 			   .RuleFor(p => p.HomeAddress, f => new Address { City = f.Address.City(), Street = f.Address.StreetAddress() });
 
 			Managers = faker.Generate(count);
 			var topManager = faker.Generate(1)[0];
-			topManager.Subordinates = Managers.Cast<Emploee>().ToList();
+			topManager.Subordinates = Managers.Cast<Employee>().ToList();
 			Managers.Add(topManager);
 		}
 
-		private void FillEmploees(int count)
+		private void FillEmployees(int count)
 		{
 			var id = 15000L;
-			var faker = new Faker<Emploee>()
+			var faker = new Faker<Employee>()
 			   .RuleFor(p => p.Id, _ => id++)
 			   .RuleFor(p => p.FirstName, f => f.Person.FirstName)
 			   .RuleFor(p => p.LastName, f => f.Person.LastName)
 			   .RuleFor(p => p.JobTitles, f => f.PickRandom(JobTitles, f.Random.Number(1, 3)))
 			   .RuleFor(p => p.PhoneNumber, f => f.Person.Phone)
-			   .RuleFor(p => p.HomeAddress, f => new Address { City = f.Address.City(), Street = f.Address.StreetAddress()});
+			   .RuleFor(p => p.HomeAddress, f => new Address { City = f.Address.City(), Street = f.Address.StreetAddress() });
 
-			Emploees = faker.Generate(count);
+			Employees = faker.Generate(count);
 		}
 
 		private void FillJobTitles(int count)
@@ -91,7 +91,7 @@ namespace ODataBenchmark.DataModel
 			   .RuleFor(p => p.Name, f => f.Vehicle.Model())
 			   .RuleFor(p => p.JobClassification, f => f.PickRandom(JobClassifications))
 			   .RuleFor(p => p.JobClassificationId, (_, e) => e.JobClassification.Id)
-			   .RuleFor(p => p.Scopes, f => f.PickRandom(Scopes, f.Random.Number(5)));
+			   .RuleFor(p => p.Scopes, f => f.PickRandom(Scopes, f.Random.Number(1, 5)));
 
 			JobTitles = faker.Generate(count);
 		}

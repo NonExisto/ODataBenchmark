@@ -2,9 +2,9 @@
 
 namespace ODataBenchmark.DataModel
 {
-	public class Manager : Emploee
+	public class Manager : Employee
 	{
-		public virtual IList<Emploee> Subordinates { get; set; }
+		public virtual IList<Employee> Subordinates { get; set; }
 		public virtual IList<Project> Supervise { get; set; }
 	}
 }

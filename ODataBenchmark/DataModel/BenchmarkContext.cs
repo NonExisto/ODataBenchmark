@@ -12,7 +12,7 @@ namespace ODataBenchmark.DataModel
 		public DbSet<Customer> Customers { get; set; }
 		public DbSet<Project> Projects { get; set; }
 		public DbSet<Scope> Scopes { get; set; }
-		public DbSet<Emploee> Emploees { get; set; }
+		public DbSet<Employee> Employees { get; set; }
 		public DbSet<Manager> Managers { get; set; }
 		public DbSet<JobTitle> JobTitles { get; set; }
 		public DbSet<JobClassification> JobClassifications { get; set; }
@@ -27,9 +27,9 @@ namespace ODataBenchmark.DataModel
 			modelBuilder.Entity<JobTitle>().HasOne(c => c.JobClassification).WithMany().HasForeignKey(e => e.JobClassificationId);
 			modelBuilder.Entity<JobTitle>().HasData(fakeData.JobTitles);
 
-			modelBuilder.Entity<Emploee>().OwnsOne(c => c.HomeAddress).WithOwner();
-			modelBuilder.Entity<Emploee>().HasMany(c => c.JobTitles).WithMany(c => c.Emploees);
-			modelBuilder.Entity<Emploee>().HasData(fakeData.Emploees);
+			modelBuilder.Entity<Employee>().OwnsOne(c => c.HomeAddress).WithOwner();
+			modelBuilder.Entity<Employee>().HasMany(c => c.JobTitles).WithMany(c => c.Employees);
+			modelBuilder.Entity<Employee>().HasData(fakeData.Employees);
 
 			modelBuilder.Entity<Manager>().HasMany(c => c.Subordinates).WithMany(c => c.Managers);
 			modelBuilder.Entity<Manager>().HasData(fakeData.Managers);

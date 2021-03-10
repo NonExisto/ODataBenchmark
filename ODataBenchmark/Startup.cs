@@ -30,7 +30,10 @@ namespace ODataBenchmark
 		{
 			services.AddDbContext<BenchmarkContext>(opt => opt.UseInMemoryDatabase("BookLists"));
 			services.AddControllers();
-			services.AddOData(opt => opt.Count().Filter().Expand().Select().OrderBy().SetMaxTop(200).AddModel("odata", EdmModelBuilder.GetEdmModel()));
+			services.AddOData(opt =>
+			{
+				opt.Count().Filter().Expand().Select().OrderBy().SetMaxTop(200).AddModel("odata", EdmModelBuilder.GetEdmModel());
+			});
 
 			//services.AddMvcCore(options =>
 			//{
@@ -56,12 +59,19 @@ namespace ODataBenchmark
 			}
 
 			app.UseODataBatching();
+
 			app.UseSwagger();
-			app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "OData 8.x OpenAPI"));
+			app.UseSwaggerUI(c =>
+			{
+				c.SwaggerEndpoint("/swagger/v1/swagger.json", "OData 8.x OpenAPI");
+			});
+
 			app.UseRouting();
 
-
-			app.UseEndpoints(endpoints => endpoints.MapControllers());
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapControllers();
+			});
 		}
 	}
 }
