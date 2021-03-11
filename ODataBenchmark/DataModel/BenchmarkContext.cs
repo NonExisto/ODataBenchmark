@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ODataBenchmark.DataModel
 {
@@ -27,7 +28,10 @@ namespace ODataBenchmark.DataModel
 			modelBuilder.Entity<JobTitle>().HasOne(c => c.JobClassification).WithMany().HasForeignKey(e => e.JobClassificationId);
 			modelBuilder.Entity<JobTitle>().HasData(fakeData.JobTitles);
 
-			modelBuilder.Entity<Employee>().OwnsOne(c => c.HomeAddress).WithOwner();
+			
+			modelBuilder.Entity<Person>();
+			modelBuilder.Entity<Employee>().OwnsOne(c => c.HomeAddress).WithOwner().HasForeignKey(c => c.EmployeeId);
+			modelBuilder.Entity<Employee>().OwnsOne(c => c.HomeAddress).HasData(fakeData.Addresses);
 			modelBuilder.Entity<Employee>().HasMany(c => c.JobTitles).WithMany(c => c.Employees);
 			modelBuilder.Entity<Employee>().HasData(fakeData.Employees);
 
@@ -40,5 +44,7 @@ namespace ODataBenchmark.DataModel
 			modelBuilder.Entity<Project>().HasMany(c => c.Scopes).WithMany("ProjectScopes");
 			modelBuilder.Entity<Project>().HasData(fakeData.Projects);
 		}
+
+		
 	}
 }

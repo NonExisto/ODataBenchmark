@@ -1,8 +1,7 @@
 ﻿namespace ODataBenchmark.DataModel
 {
-	public class JobClassification
+	public class JobClassification : Entity
 	{
-		public long Id { get; set; }
 		public string Name { get; set; }
 	}
 }

@@ -2,9 +2,8 @@
 
 namespace ODataBenchmark.DataModel
 {
-	public class Project
+	public class Project : Entity
 	{
-		public long Id { get; set; }
 		public string Name { get; set; }
 
 		public virtual IList<Customer> Owners { get; set; }
