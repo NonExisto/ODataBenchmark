@@ -14,6 +14,7 @@ namespace ODataBenchmark.DataModel
 		public IList<Customer> Customers { get; private set; }
 		public IList<Project> Projects { get; private set; }
 		public IList<Address> Addresses { get; private set; }
+		public IList<EmployeeJobTitle> EmployeeJobTitles { get; set; }
 
 		private long personId = 50;
 		public FakeData(int count)
@@ -61,7 +62,7 @@ namespace ODataBenchmark.DataModel
 			   .RuleFor(p => p.JobTitles, f => f.PickRandom(JobTitles, f.Random.Number(1, 3)).ToArray())
 			   .RuleFor(p => p.PhoneNumber, f => f.Person.Phone);
 
-			Employees = faker.Generate(count);
+			var employees = faker.Generate(count);
 
 			var managerFaker = new Faker<Manager>()
 			   .RuleFor(p => p.Id, _ => personId++)
@@ -69,18 +70,28 @@ namespace ODataBenchmark.DataModel
 			   .RuleFor(p => p.LastName, f => f.Person.LastName)
 			   .RuleFor(p => p.JobTitles, f => f.PickRandom(JobTitles, f.Random.Number(1, 3)).ToArray())
 			   .RuleFor(p => p.PhoneNumber, f => f.Person.Phone)
-			   .RuleFor(p => p.Subordinates, f => f.PickRandom(Employees, f.Random.Number(3, 12)).ToArray());
+			   .RuleFor(p => p.Subordinates, f => f.PickRandom(employees, f.Random.Number(3, 12)).ToArray());
 
-			Managers = managerFaker.Generate(count >> 3);
+			var managers = managerFaker.Generate(count >> 3);
 			var topManager = managerFaker.Generate(1)[0];
-			topManager.Subordinates = Managers.Cast<Employee>().ToList();
-			Managers.Add(topManager);
+			topManager.Subordinates = managers.Cast<Employee>().ToList();
+			managers.Add(topManager);
 
 			Addresses = new Faker<Address>()
 			.RuleFor(c => c.City, f => f.Address.City())
 			.RuleFor(c => c.Street, f => f.Address.StreetAddress())
 			.RuleFor(c => c.EmployeeId, f => personId - f.IndexFaker)
-			.Generate(Employees.Count + Managers.Count);
+			.Generate(employees.Count + managers.Count);
+
+			EmployeeJobTitles = employees.SelectMany(e => e.JobTitles.Select(j => new EmployeeJobTitle { EmployeesId = e.Id, JobTitlesId = j.Id }))
+				.Concat(managers.SelectMany(e => e.JobTitles.Select(j => new EmployeeJobTitle { EmployeesId = e.Id, JobTitlesId = j.Id })))
+				.ToArray();
+
+			employees.ForEach(e => e.JobTitles = null);
+			managers.ForEach(m => m.JobTitles = null);
+
+			Employees = employees;
+			Managers = managers;
 		}
 
 		private void FillJobTitles(int count)

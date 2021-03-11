@@ -32,7 +32,7 @@ namespace ODataBenchmark.DataModel
 			modelBuilder.Entity<Person>();
 			modelBuilder.Entity<Employee>().OwnsOne(c => c.HomeAddress).WithOwner().HasForeignKey(c => c.EmployeeId);
 			modelBuilder.Entity<Employee>().OwnsOne(c => c.HomeAddress).HasData(fakeData.Addresses);
-			modelBuilder.Entity<Employee>().HasMany(c => c.JobTitles).WithMany(c => c.Employees);
+			modelBuilder.Entity<Employee>().HasMany(c => c.JobTitles).WithMany(c => c.Employees).UsingEntity(j => j.HasData(fakeData.EmployeeJobTitles));
 			modelBuilder.Entity<Employee>().HasData(fakeData.Employees);
 
 			modelBuilder.Entity<Manager>().HasMany(c => c.Subordinates).WithMany(c => c.Managers);
