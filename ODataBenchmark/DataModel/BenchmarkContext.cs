@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ODataBenchmark.DataModel
 {
@@ -44,7 +43,5 @@ namespace ODataBenchmark.DataModel
 			modelBuilder.Entity<Project>().HasMany(c => c.Scopes).WithMany("ProjectScopes").UsingEntity(j => j.HasData(fakeData.ProjectScopes));
 			modelBuilder.Entity<Project>().HasData(fakeData.Projects);
 		}
-
-		
 	}
 }
