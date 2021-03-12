@@ -10,6 +10,8 @@ namespace ODataBenchmark.DataModel
 
 		public virtual Manager Superviser { get; set; }
 
+		public long SuperviserId { get; set; }
+
 		public virtual IList<Scope> Scopes { get; set; }
 
 		public IList<Employee> Members { get; set; }

@@ -17,8 +17,11 @@ namespace ODataBenchmark.DataModel
 		public IList<EmployeeJobTitle> EmployeeJobTitles { get; private set; }
 		public IList<JobScope> JobScopes { get; private set; }
 		public IList<EmployeeManager> EmployeeManagers { get; private set; }
+		public IList<ProjectMember> ProjectMembers { get; private set; }
+		public IList<ProjectScope> ProjectScopes { get; private set; }
+		public IList<ProjectOwner> ProjectOwners { get; private set; }
 
-		private long personId = 50;
+		private long _personId = 50;
 		public FakeData(int count)
 		{
 			FillScopes(count * 5);
@@ -38,15 +41,21 @@ namespace ODataBenchmark.DataModel
 			   .RuleFor(p => p.Scopes, f => f.PickRandom(Scopes, f.Random.Number(1, 8)).ToArray())
 			   .RuleFor(p => p.Members, f => f.PickRandom(Employees, f.Random.Number(1, 12)).ToArray())
 			   .RuleFor(p => p.Superviser, f => f.PickRandom(Managers))
+			   .RuleFor(p => p.SuperviserId, (_, e) => e.Superviser.Id)
 			   .RuleFor(p => p.Owners, f => f.PickRandom(Customers, f.Random.Number(1, 3)).ToArray());
 
-			Projects = faker.Generate(count);
+			List<Project> projects = faker.Generate(count);
+			ProjectMembers = projects.SelectMany(p => p.Members.Select(m => new ProjectMember { MembersId = m.Id, WorksOnId = p.Id})).ToArray();
+			ProjectScopes = projects.SelectMany(p => p.Scopes.Select(s => new ProjectScope { ScopesId = s.Id, ProjectScopesId = p.Id })).ToArray();
+			ProjectOwners = projects.SelectMany(p => p.Owners.Select(c => new ProjectOwner { OwnersId = c.Id, OwnsId = p.Id })).ToArray();
+			projects.ForEach(p => { p.Superviser = null; p.Members = null; p.Scopes = null; p.Owners = null; });
+			Projects = projects;
 		}
 
 		private void FilCustomers(int count)
 		{
 			var faker = new Faker<Customer>()
-			   .RuleFor(p => p.Id, _ => personId++)
+			   .RuleFor(p => p.Id, _ => _personId++)
 			   .RuleFor(p => p.FirstName, f => f.Person.FirstName)
 			   .RuleFor(p => p.LastName, f => f.Person.LastName)
 			   .RuleFor(p => p.Login, f => f.Person.Email)
@@ -58,7 +67,7 @@ namespace ODataBenchmark.DataModel
 		private void FillEmployees(int count)
 		{
 			var faker = new Faker<Employee>()
-			   .RuleFor(p => p.Id, _ => personId++)
+			   .RuleFor(p => p.Id, _ => _personId++)
 			   .RuleFor(p => p.FirstName, f => f.Person.FirstName)
 			   .RuleFor(p => p.LastName, f => f.Person.LastName)
 			   .RuleFor(p => p.JobTitles, f => f.PickRandom(JobTitles, f.Random.Number(1, 3)).ToArray())
@@ -67,7 +76,7 @@ namespace ODataBenchmark.DataModel
 			var employees = faker.Generate(count);
 
 			var managerFaker = new Faker<Manager>()
-			   .RuleFor(p => p.Id, _ => personId++)
+			   .RuleFor(p => p.Id, _ => _personId++)
 			   .RuleFor(p => p.FirstName, f => f.Person.FirstName)
 			   .RuleFor(p => p.LastName, f => f.Person.LastName)
 			   .RuleFor(p => p.JobTitles, f => f.PickRandom(JobTitles, f.Random.Number(1, 3)).ToArray())
@@ -82,7 +91,7 @@ namespace ODataBenchmark.DataModel
 			Addresses = new Faker<Address>()
 			.RuleFor(c => c.City, f => f.Address.City())
 			.RuleFor(c => c.Street, f => f.Address.StreetAddress())
-			.RuleFor(c => c.EmployeeId, f => personId - f.IndexFaker)
+			.RuleFor(c => c.EmployeeId, f => _personId - f.IndexFaker)
 			.Generate(employees.Count + managers.Count);
 
 			EmployeeJobTitles = employees.SelectMany(e => e.JobTitles.Select(j => new EmployeeJobTitle { EmployeesId = e.Id, JobTitlesId = j.Id }))
