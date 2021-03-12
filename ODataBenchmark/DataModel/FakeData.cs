@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ODataBenchmark.DataModel
 {
-	public class FakeData
+	internal class FakeData
 	{
 		public IList<Scope> Scopes { get; private set; }
 		public IList<JobClassification> JobClassifications { get; private set; }
@@ -14,8 +14,9 @@ namespace ODataBenchmark.DataModel
 		public IList<Customer> Customers { get; private set; }
 		public IList<Project> Projects { get; private set; }
 		public IList<Address> Addresses { get; private set; }
-		public IList<EmployeeJobTitle> EmployeeJobTitles { get; set; }
-		public IList<JobScope> JobScopes { get; internal set; }
+		public IList<EmployeeJobTitle> EmployeeJobTitles { get; private set; }
+		public IList<JobScope> JobScopes { get; private set; }
+		public IList<EmployeeManager> EmployeeManagers { get; private set; }
 
 		private long personId = 50;
 		public FakeData(int count)
@@ -87,9 +88,10 @@ namespace ODataBenchmark.DataModel
 			EmployeeJobTitles = employees.SelectMany(e => e.JobTitles.Select(j => new EmployeeJobTitle { EmployeesId = e.Id, JobTitlesId = j.Id }))
 				.Concat(managers.SelectMany(e => e.JobTitles.Select(j => new EmployeeJobTitle { EmployeesId = e.Id, JobTitlesId = j.Id })))
 				.ToArray();
+			EmployeeManagers = managers.SelectMany(m => m.Subordinates.Select(e => new EmployeeManager { SubordinatesId = e.Id, ManagersId = m.Id })).ToArray();
 
 			employees.ForEach(e => e.JobTitles = null);
-			managers.ForEach(m => m.JobTitles = null);
+			managers.ForEach(m => { m.JobTitles = null; m.Subordinates = null; });
 
 			Employees = employees;
 			Managers = managers;
