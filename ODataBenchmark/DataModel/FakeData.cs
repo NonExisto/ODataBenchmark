@@ -15,6 +15,7 @@ namespace ODataBenchmark.DataModel
 		public IList<Project> Projects { get; private set; }
 		public IList<Address> Addresses { get; private set; }
 		public IList<EmployeeJobTitle> EmployeeJobTitles { get; set; }
+		public IList<JobScope> JobScopes { get; internal set; }
 
 		private long personId = 50;
 		public FakeData(int count)
@@ -104,7 +105,10 @@ namespace ODataBenchmark.DataModel
 			   .RuleFor(p => p.JobClassificationId, (_, e) => e.JobClassification.Id)
 			   .RuleFor(p => p.Scopes, f => f.PickRandom(Scopes, f.Random.Number(1, 5)).ToArray());
 
-			JobTitles = faker.Generate(count);
+			var jobTitles = faker.Generate(count);
+			JobTitles = jobTitles;
+			JobScopes = JobTitles.SelectMany(jt => jt.Scopes.Select(s => new JobScope { JobScopesId = jt.Id, ScopesId = s.Id })).ToArray();
+			jobTitles.ForEach(jt => { jt.Scopes = null; jt.JobClassification = null; });
 		}
 
 		private void FillJobClassifications(int count)

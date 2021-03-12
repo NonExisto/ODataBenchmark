@@ -24,7 +24,7 @@ namespace ODataBenchmark.DataModel
 
 			modelBuilder.Entity<Scope>().HasData(fakeData.Scopes);
 			modelBuilder.Entity<JobClassification>().HasData(fakeData.JobClassifications);
-			modelBuilder.Entity<JobTitle>().HasMany(c => c.Scopes).WithMany("JobScopes");
+			modelBuilder.Entity<JobTitle>().HasMany(c => c.Scopes).WithMany("JobScopes").UsingEntity(e => e.HasData(fakeData.JobScopes));
 			modelBuilder.Entity<JobTitle>().HasOne(c => c.JobClassification).WithMany().HasForeignKey(e => e.JobClassificationId);
 			modelBuilder.Entity<JobTitle>().HasData(fakeData.JobTitles);
 
