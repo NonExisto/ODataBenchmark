@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,6 +21,7 @@ namespace ODataBenchmark.DataModel
 		public IList<ProjectMember> ProjectMembers { get; private set; }
 		public IList<ProjectScope> ProjectScopes { get; private set; }
 		public IList<ProjectOwner> ProjectOwners { get; private set; }
+		public IList<WorkItem> WorkItems { get; private set; }
 
 		private long _personId = 50;
 		public FakeData(int count)
@@ -30,6 +32,22 @@ namespace ODataBenchmark.DataModel
 			FillEmployees(count);
 			FilCustomers(count >> 1);
 			FillProjects(count >> 1);
+			FillWorkItems(count << 8);
+		}
+
+		private void FillWorkItems(int count)
+		{
+			var witLen = Enum.GetNames(typeof(WorkItemType)).Length - 1;
+			var wisLen = Enum.GetNames(typeof(WorkItemState)).Length - 1;
+			var id = 200_000;
+			WorkItems = new Faker<WorkItem>()
+				.RuleFor(p => p.Id, _ => id++)
+				.RuleFor(p => p.Title, f => f.Vehicle.Model())
+				.RuleFor(p => p.Description, f => f.Vehicle.Vin())
+				.RuleFor(p => p.ProjectId, f => f.PickRandom(Projects).Id)
+				.RuleFor(p => p.WorkItemType, f => (WorkItemType)f.Random.Number(witLen))
+				.RuleFor(p => p.WorkItemState, f => (WorkItemState)f.Random.Number(wisLen))
+				.Generate(count);
 		}
 
 		private void FillProjects(int count)

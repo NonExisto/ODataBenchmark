@@ -15,9 +15,11 @@ namespace TestRunner
 			startRequest.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("plain/text"));
 			var resp = await client.SendAsync(startRequest).ConfigureAwait(false);
 			resp.EnsureSuccessStatusCode();
-			var lenValue =  await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
+			var lenValue = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
 
 			int seedSize = int.Parse(lenValue);
+
+
 		}
 	}
 }
