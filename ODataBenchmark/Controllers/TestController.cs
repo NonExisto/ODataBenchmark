@@ -26,6 +26,15 @@ namespace ODataBenchmark.Controllers
 		}
 
 		[HttpGet]
+		public IActionResult AllScopes()
+		{
+			return Ok(_benchmarkContext.Scopes.Select(c => new
+			{
+				c.Id, c.Name, c.Description
+			}));
+		}
+
+		[HttpGet]
 		public IActionResult AllCustomers()
 		{
 			return Ok(_benchmarkContext.Customers.Include(c => c.Owns).Select(c => new
