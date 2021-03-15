@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ODataBenchmark.DataModel;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ODataBenchmark.Controllers
@@ -20,7 +21,8 @@ namespace ODataBenchmark.Controllers
 		public IActionResult StartTest()
 		{
 			_benchmarkContext.Database.EnsureCreated();
-			return Ok(_benchmarkContext.Employees.Count());
+			Debug.Assert(_benchmarkContext.Employees.Count() > _benchmarkContext.SeedSize);
+			return Ok(_benchmarkContext.SeedSize);
 		}
 
 		[HttpGet]

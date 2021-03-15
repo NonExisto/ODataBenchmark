@@ -4,6 +4,7 @@ namespace ODataBenchmark.DataModel
 {
 	public class BenchmarkContext : DbContext
 	{
+		public readonly int SeedSize = 500;
 		public BenchmarkContext(DbContextOptions<BenchmarkContext> options)
 			: base(options)
 		{
@@ -19,7 +20,7 @@ namespace ODataBenchmark.DataModel
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			FakeData fakeData = new(500);
+			FakeData fakeData = new(SeedSize);
 
 			modelBuilder.Entity<Scope>().HasData(fakeData.Scopes);
 			modelBuilder.Entity<JobClassification>().HasData(fakeData.JobClassifications);

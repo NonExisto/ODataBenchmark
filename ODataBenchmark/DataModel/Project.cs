@@ -14,6 +14,8 @@ namespace ODataBenchmark.DataModel
 
 		public virtual IList<Scope> Scopes { get; set; }
 
-		public IList<Employee> Members { get; set; }
+		public virtual IList<Employee> Members { get; set; }
+
+		public virtual IList<WorkItem> WorkItems { get; set; }
 	}
 }
