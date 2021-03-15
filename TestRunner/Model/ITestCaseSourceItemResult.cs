@@ -1,11 +1,9 @@
-﻿using System;
-
-namespace TestRunner.Model
+﻿namespace TestRunner.Model
 {
 	public interface ITestCaseSourceItemResult
 	{
-		TimeSpan Duration { get; }
-		int PayloadSize { get; }
+		long Duration { get; }
+		long PayloadSize { get; }
 
 		ITestCaseSourceItem TestCaseSourceItem { get; }
 	}

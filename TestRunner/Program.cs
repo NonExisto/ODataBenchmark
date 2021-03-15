@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using TestRunner.Model;
 using TestRunner.Model.TestCases;
 using System.Net.Http.Headers;
+using System.IO;
+using System.Text.Json;
 
 namespace TestRunner
 {
@@ -32,6 +34,26 @@ namespace TestRunner
 			var tasks = Enumerable.Range(0, split).Select(idx => new ArraySegment<ITestCaseSourceItem>(tests, idx * blockLen, (idx + 1) * blockLen))
 				.Select(segment => RunTests(segment)).ToArray();
 			await Task.WhenAll(tasks).ConfigureAwait(false);
+
+			var benchMark = tasks.SelectMany(t => t.Result).GroupBy(r => r.TestCaseSourceItem.TestCase.Name)
+					.Select(gr => new
+					{
+						Name = gr.Key,
+						Types = gr.GroupBy(t => t.TestCaseSourceItem.TestCaseSource.TestCaseType)
+							.Select(tg => new
+							{
+								TypeName = tg.Key,
+								Stats = tg.Aggregate((duration: 0L, payload: 0L),
+							(cur, sg) => (duration: cur.duration + sg.Duration, payload: cur.payload + sg.PayloadSize))
+							})
+							.Select(v => new { v.TypeName, AvgDuration = v.Stats.duration / (double)tests.Length, AvgPayloadSize = v.Stats.payload / (double)tests.Length })
+							.ToArray()
+					});
+
+			using (var stream = File.Open("..\\run.json", FileMode.Create, FileAccess.Write, FileShare.None))
+			{
+				await JsonSerializer.SerializeAsync(stream, benchMark, new JsonSerializerOptions { WriteIndented = true }).ConfigureAwait(false);
+			}
 		}
 
 		private static async Task<ITestCaseSourceItemResult[]> RunTests(ArraySegment<ITestCaseSourceItem> items)
@@ -45,5 +67,6 @@ namespace TestRunner
 
 			return results;
 		}
+
 	}
 }
