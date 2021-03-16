@@ -19,11 +19,9 @@ namespace TestRunner.Model
 
 		public int Order { get; }
 
-		async Task<(long duration, long payloadSize)> ITestCaseSourceItem.RunTest(IHostingConfiguration hostingConfiguration)
+		async Task<long> ITestCaseSourceItem.RunTest(IHostingConfiguration hostingConfiguration)
 		{
 			HttpResponseMessage resp = null;
-			Stopwatch stopwatch = new();
-			stopwatch.Start();
 			try
 			{
 				resp = await hostingConfiguration.SendAsync(_path, _accepts).ConfigureAwait(false);
@@ -32,8 +30,7 @@ namespace TestRunner.Model
 			{
 				Console.Error.Write(ex);
 			}
-			stopwatch.Stop();
-			return (stopwatch.ElapsedMilliseconds, resp?.Content.Headers.ContentLength.Value ?? 0);
+			return resp?.Content.Headers.ContentLength.Value ?? 0;
 		}
 	}
 }

@@ -5,6 +5,7 @@ using TestRunner.Model;
 using TestRunner.Model.TestCases;
 using System.IO;
 using System.Text.Json;
+using System.Diagnostics;
 
 namespace TestRunner
 {
@@ -78,11 +79,14 @@ namespace TestRunner
 		private static async Task<TestCaseSourceItemResult[]> RunTestGroup(ArraySegment<(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)> items, IHostingConfiguration hostingConfiguration)
 		{
 			TestCaseSourceItemResult[] results = new TestCaseSourceItemResult[items.Count];
+			Stopwatch stopwatch = new();
 			for (int i = 0; i < items.Count; i++)
 			{
 				var (TestCase, TestSource, Item) = items[i];
-				var (duration, payloadSize) = await Item.RunTest(hostingConfiguration).ConfigureAwait(false);
-				results[i] = new TestCaseSourceItemResult { Duration = duration, PayloadSize = payloadSize, TestCase = TestCase, TestCaseSourceItem = Item, TestSource = TestSource };
+				stopwatch.Start();
+				var payloadSize = await Item.RunTest(hostingConfiguration).ConfigureAwait(false);
+				stopwatch.Stop();
+				results[i] = new TestCaseSourceItemResult { Duration = stopwatch.ElapsedMilliseconds, PayloadSize = payloadSize, TestCase = TestCase, TestCaseSourceItem = Item, TestSource = TestSource };
 			}
 
 			return results;

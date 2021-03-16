@@ -5,6 +5,6 @@ namespace TestRunner.Model
 	public interface ITestCaseSourceItem
 	{
 		int Order { get; }
-		Task<(long duration, long payloadSize)> RunTest(IHostingConfiguration hostingConfiguration);
+		Task<long> RunTest(IHostingConfiguration hostingConfiguration);
 	}
 }
