@@ -15,7 +15,7 @@ namespace ODataBenchmark.Controllers
 		}
 
 		[HttpGet]
-		[EnableQuery]
+		[EnableQuery(MaxExpansionDepth = 4)]
 		public IActionResult Get()
 		{
 			return Ok(_benchmarkContext.Projects);

@@ -41,10 +41,12 @@ namespace TestRunner
 							.Select(tg => new
 							{
 								TestType = tg.Key.ToString(),
-								Stats = tg.Aggregate((duration: 0L, payload: 0L),
+								Size = (double)tg.Count(x => x.PayloadSize > 0),
+								Stats = tg.Where(x => x.PayloadSize > 0).Aggregate((duration: 0L, payload: 0L),
 							(cur, sg) => (duration: cur.duration + sg.Duration, payload: cur.payload + sg.PayloadSize))
 							})
-							.Select(v => new { v.TestType, AvgDurationMs = v.Stats.duration / (double)_runCount, AvgPayloadSizeBytes = v.Stats.payload / (double)_runCount })
+							.Where(v => v.Size > 0d)
+							.Select(v => new { v.TestType, AvgDurationMs = v.Stats.duration / v.Size, AvgPayloadSizeBytes = v.Stats.payload / v.Size })
 							.ToArray()
 					});
 			using (var stream = File.Open("..\\..\\run.json", FileMode.Create, FileAccess.Write, FileShare.None))
@@ -87,6 +89,7 @@ namespace TestRunner
 				var payloadSize = await Item.RunTest(hostingConfiguration).ConfigureAwait(false);
 				stopwatch.Stop();
 				results[i] = new TestCaseSourceItemResult { Duration = stopwatch.ElapsedMilliseconds, PayloadSize = payloadSize, TestCase = TestCase, TestCaseSourceItem = Item, TestSource = TestSource };
+				stopwatch.Reset();
 			}
 
 			return results;

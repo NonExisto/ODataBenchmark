@@ -132,7 +132,7 @@ namespace ODataBenchmark.Controllers
 							m.LastName,
 							m.BirthDate,
 							m.PhoneNumber,
-							Subordinates = m.Subordinates.Select(sb => new { sb.Id, sb.FirstName, sb.LastName, sb.PhoneNumber })
+							Subordinates = m.Subordinates.Select(sb => new { sb.Id, sb.FirstName, sb.LastName, sb.PhoneNumber, sb.BirthDate })
 						})
 
 					}

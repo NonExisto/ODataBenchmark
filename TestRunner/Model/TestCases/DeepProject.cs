@@ -5,7 +5,7 @@ namespace TestRunner.Model.TestCases
 {
 	public class DeepProject : ITestCase
 	{
-		string ITestCase.Name => "Single Project by Id, level 4 expands";
+		string ITestCase.Name => "Single Project by Id, level 3 expands";
 
 		IEnumerable<ITestCaseSource> ITestCase.GetTestSources()
 		{

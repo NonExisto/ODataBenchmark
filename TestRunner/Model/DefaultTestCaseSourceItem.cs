@@ -28,9 +28,9 @@ namespace TestRunner.Model
 			}
 			catch(Exception ex)
 			{
-				Console.Error.Write(ex);
+				Console.Error.Write("Failed to send request {0} with error: {1}", _path, ex);
 			}
-			return resp?.Content.Headers.ContentLength.Value ?? 0;
+			return resp?.IsSuccessStatusCode == true ? resp.Content.Headers.ContentLength.Value : 0;
 		}
 	}
 }
