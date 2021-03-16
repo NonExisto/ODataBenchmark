@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace TestRunner.Model.TestCases
 {
@@ -22,22 +21,7 @@ namespace TestRunner.Model.TestCases
 				Random rnd = new();
 				for (int i = 0; i < size; i++)
 				{
-					yield return new TestCaseSourceItem(rnd.Next());
-				}
-			}
-
-			private class TestCaseSourceItem : ITestCaseSourceItem
-			{
-				public TestCaseSourceItem(int order)
-				{
-					Order = order;
-				}
-
-				public int Order { get; }
-
-				Task<(long duration, long payloadSize)> ITestCaseSourceItem.RunTest(IHostingConfiguration hostingConfiguration)
-				{
-					throw new NotImplementedException();
+					yield return new DefaultTestCaseSourceItem(rnd.Next(), "api/test/AllScopes");
 				}
 			}
 		}
@@ -48,7 +32,11 @@ namespace TestRunner.Model.TestCases
 
 			IEnumerable<ITestCaseSourceItem> ITestCaseSource.GetTestCaseItems(int size, int seed)
 			{
-				throw new NotImplementedException();
+				Random rnd = new();
+				for (int i = 0; i < size; i++)
+				{
+					yield return new DefaultTestCaseSourceItem(rnd.Next(), "odata/Scopes");
+				}
 			}
 		}
 	}
