@@ -7,11 +7,13 @@ namespace TestRunner.Model
 	public class DefaultTestCaseSourceItem : ITestCaseSourceItem
 	{
 		private readonly string _path;
+		private readonly string _accepts;
 
-		public DefaultTestCaseSourceItem(int order, string path)
+		public DefaultTestCaseSourceItem(int order, string path, string accepts = "application/json")
 		{
 			Order = order;
 			_path = path;
+			_accepts = accepts;
 		}
 
 		public int Order { get; }
@@ -23,7 +25,7 @@ namespace TestRunner.Model
 			stopwatch.Start();
 			try
 			{
-				resp = await hostingConfiguration.SendAsync(_path, "application/json").ConfigureAwait(false);
+				resp = await hostingConfiguration.SendAsync(_path, _accepts).ConfigureAwait(false);
 			}
 			catch
 			{
