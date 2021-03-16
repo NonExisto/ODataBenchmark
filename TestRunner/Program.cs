@@ -14,20 +14,17 @@ namespace TestRunner
 		{
 			IHostingConfiguration hostingConfiguration = new HostingConfiguration();
 			var seedSize = await InitTests(hostingConfiguration).ConfigureAwait(false);
+			(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)[] tests = PrepareTestCases(seedSize);
+			await RunAllTests(hostingConfiguration, tests).ConfigureAwait(false);
+		}
 
-			ITestCase[] testCases = new[] { new AllScopes() };
-
-			var tests = testCases.SelectMany(tc =>
-					tc.GetTestSources()
-					.SelectMany(ts => ts.GetTestCaseItems(1000, seedSize)
-					.Select(item => (TestCase: tc, TestSource: ts, Item: item))))
-				.OrderBy(tsi => tsi.Item.Order).ToArray();
+		private static async Task RunAllTests(IHostingConfiguration hostingConfiguration, (ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)[] tests)
+		{
 			var split = Environment.ProcessorCount >> 2;
-
 			var blockLen = tests.Length / split;
 			var tasks = Enumerable.Range(0, split).Select(idx =>
 				new ArraySegment<(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)>(tests, idx * blockLen, (idx + 1) * blockLen))
-					.Select(segment => RunTests(segment, hostingConfiguration)).ToArray();
+					.Select(segment => RunTestGroup(segment, hostingConfiguration)).ToArray();
 			await Task.WhenAll(tasks).ConfigureAwait(false);
 
 			var benchMark = tasks.SelectMany(t => t.Result).GroupBy(r => r.TestCase.Name)
@@ -44,9 +41,20 @@ namespace TestRunner
 							.Select(v => new { v.TypeName, AvgDuration = v.Stats.duration / (double)tests.Length, AvgPayloadSize = v.Stats.payload / (double)tests.Length })
 							.ToArray()
 					});
-
-			using var stream = File.Open("..\\run.json", FileMode.Create, FileAccess.Write, FileShare.None);
+			var stream = File.Open("..\\run.json", FileMode.Create, FileAccess.Write, FileShare.None);
 			await JsonSerializer.SerializeAsync(stream, benchMark, new JsonSerializerOptions { WriteIndented = true }).ConfigureAwait(false);
+		}
+
+		private static (ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)[] PrepareTestCases(int seedSize)
+		{
+			ITestCase[] testCases = new[] { new AllScopes() };
+
+			var tests = testCases.SelectMany(tc =>
+					tc.GetTestSources()
+					.SelectMany(ts => ts.GetTestCaseItems(1000, seedSize)
+					.Select(item => (TestCase: tc, TestSource: ts, Item: item))))
+				.OrderBy(tsi => tsi.Item.Order).ToArray();
+			return tests;
 		}
 
 		private static async Task<int> InitTests(IHostingConfiguration hostingConfiguration)
@@ -60,7 +68,7 @@ namespace TestRunner
 			return int.Parse(lenValue);
 		}
 
-		private static async Task<TestCaseSourceItemResult[]> RunTests(ArraySegment<(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)> items, IHostingConfiguration hostingConfiguration)
+		private static async Task<TestCaseSourceItemResult[]> RunTestGroup(ArraySegment<(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)> items, IHostingConfiguration hostingConfiguration)
 		{
 			TestCaseSourceItemResult[] results = new TestCaseSourceItemResult[items.Count];
 			for (int i = 0; i < items.Count; i++)
