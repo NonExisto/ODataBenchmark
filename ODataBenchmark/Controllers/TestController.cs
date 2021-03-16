@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ODataBenchmark.Controllers
 {
-	[Route("api/[controller]/[action]")]
+	[Route("api/{controller}/{action}/{id?}")]
 	[ApiController]
 	public class TestController : ControllerBase
 	{
@@ -31,6 +31,20 @@ namespace ODataBenchmark.Controllers
 			return Ok(_benchmarkContext.Scopes.Select(c => new
 			{
 				c.Id, c.Name, c.Description
+			}));
+		}
+
+		[HttpGet]
+		public IActionResult AllWorkItems()
+		{
+			return Ok(_benchmarkContext.WorkItems.Select(c => new
+			{
+				c.Id,
+				c.Title,
+				c.Description,
+				c.ProjectId,
+				c.WorkItemState,
+				c.WorkItemType
 			}));
 		}
 

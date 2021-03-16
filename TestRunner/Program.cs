@@ -13,9 +13,13 @@ namespace TestRunner
 		public async static Task Main()
 		{
 			IHostingConfiguration hostingConfiguration = new HostingConfiguration();
+			Console.Write("Preparing test server...");
 			var seedSize = await InitTests(hostingConfiguration).ConfigureAwait(false);
+			Console.Write($"Done with seed{seedSize}");
 			(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)[] tests = PrepareTestCases(seedSize);
+			Console.WriteLine($"Generated {tests.Length} tests. Starting benchmark");
 			await RunAllTests(hostingConfiguration, tests).ConfigureAwait(false);
+			Console.WriteLine("All Done");
 		}
 
 		private static async Task RunAllTests(IHostingConfiguration hostingConfiguration, (ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)[] tests)
@@ -23,7 +27,7 @@ namespace TestRunner
 			var split = Environment.ProcessorCount >> 2;
 			var blockLen = tests.Length / split;
 			var tasks = Enumerable.Range(0, split).Select(idx =>
-				new ArraySegment<(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)>(tests, idx * blockLen, (idx + 1) * blockLen))
+				new ArraySegment<(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)>(tests, idx * blockLen, blockLen))
 					.Select(segment => RunTestGroup(segment, hostingConfiguration)).ToArray();
 			await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -47,7 +51,7 @@ namespace TestRunner
 
 		private static (ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)[] PrepareTestCases(int seedSize)
 		{
-			ITestCase[] testCases = new[] { new AllScopes() };
+			ITestCase[] testCases = new ITestCase[] { new AllScopes(), new AllCustomers(), new AllProjects(), new SingleProject(), new AllWorkItems()};
 
 			var tests = testCases.SelectMany(tc =>
 					tc.GetTestSources()
