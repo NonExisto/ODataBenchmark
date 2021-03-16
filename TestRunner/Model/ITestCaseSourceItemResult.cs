@@ -1,10 +1,12 @@
 ﻿namespace TestRunner.Model
 {
-	public interface ITestCaseSourceItemResult
+	public class TestCaseSourceItemResult
 	{
-		long Duration { get; }
-		long PayloadSize { get; }
+		public long Duration { get; init; }
+		public long PayloadSize { get; init; }
 
-		ITestCaseSourceItem TestCaseSourceItem { get; }
+		public ITestCaseSourceItem TestCaseSourceItem { get; init; }
+		public ITestCase TestCase { get; init; }
+		public ITestCaseSource TestSource { get; init; }
 	}
 }

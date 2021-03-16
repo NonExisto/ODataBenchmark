@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TestRunner.Model.TestCases
 {
@@ -9,35 +10,41 @@ namespace TestRunner.Model.TestCases
 
 		IEnumerable<ITestCaseSource> ITestCase.GetTestSources()
 		{
-			yield return new ApiTestCaseSource(this);
-			yield return new ODataTestCaseSource(this);
+			yield return new ApiTestCaseSource();
+			yield return new ODataTestCaseSource();
 		}
 
 		private class ApiTestCaseSource : ITestCaseSource
 		{
-			public ApiTestCaseSource(ITestCase testCase)
-			{
-				TestCase = testCase;
-			}
-
-			public ITestCase TestCase { get; }
 			TestCaseType ITestCaseSource.TestCaseType => TestCaseType.Api;
 			IEnumerable<ITestCaseSourceItem> ITestCaseSource.GetTestCaseItems(int size, int seed)
 			{
-				throw new NotImplementedException();
+				Random rnd = new();
+				for (int i = 0; i < size; i++)
+				{
+					yield return new TestCaseSourceItem(rnd.Next());
+				}
+			}
+
+			private class TestCaseSourceItem : ITestCaseSourceItem
+			{
+				public TestCaseSourceItem(int order)
+				{
+					Order = order;
+				}
+
+				public int Order { get; }
+
+				Task<(long duration, long payloadSize)> ITestCaseSourceItem.RunTest(IHostingConfiguration hostingConfiguration)
+				{
+					throw new NotImplementedException();
+				}
 			}
 		}
 
 		private class ODataTestCaseSource : ITestCaseSource
 		{
-			public ODataTestCaseSource(ITestCase testCase)
-			{
-				TestCase = testCase;
-			}
-
 			TestCaseType ITestCaseSource.TestCaseType => TestCaseType.Odata;
-
-			public ITestCase TestCase { get; }
 
 			IEnumerable<ITestCaseSourceItem> ITestCaseSource.GetTestCaseItems(int size, int seed)
 			{

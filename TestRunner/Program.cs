@@ -17,19 +17,24 @@ namespace TestRunner
 
 			ITestCase[] testCases = new[] { new AllScopes() };
 
-			var tests = testCases.SelectMany(tc => tc.GetTestSources().SelectMany(ts => ts.GetTestCaseItems(1000, seedSize))).OrderBy(tsi => tsi.Order).ToArray();
+			var tests = testCases.SelectMany(tc =>
+					tc.GetTestSources()
+					.SelectMany(ts => ts.GetTestCaseItems(1000, seedSize)
+					.Select(item => (TestCase: tc, TestSource: ts, Item: item))))
+				.OrderBy(tsi => tsi.Item.Order).ToArray();
 			var split = Environment.ProcessorCount >> 2;
 
 			var blockLen = tests.Length / split;
-			var tasks = Enumerable.Range(0, split).Select(idx => new ArraySegment<ITestCaseSourceItem>(tests, idx * blockLen, (idx + 1) * blockLen))
-				.Select(segment => RunTests(segment, hostingConfiguration)).ToArray();
+			var tasks = Enumerable.Range(0, split).Select(idx =>
+				new ArraySegment<(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)>(tests, idx * blockLen, (idx + 1) * blockLen))
+					.Select(segment => RunTests(segment, hostingConfiguration)).ToArray();
 			await Task.WhenAll(tasks).ConfigureAwait(false);
 
-			var benchMark = tasks.SelectMany(t => t.Result).GroupBy(r => r.TestCaseSourceItem.TestCase.Name)
+			var benchMark = tasks.SelectMany(t => t.Result).GroupBy(r => r.TestCase.Name)
 					.Select(gr => new
 					{
 						Name = gr.Key,
-						Types = gr.GroupBy(t => t.TestCaseSourceItem.TestCaseSource.TestCaseType)
+						Types = gr.GroupBy(t => t.TestSource.TestCaseType)
 							.Select(tg => new
 							{
 								TypeName = tg.Key,
@@ -55,13 +60,14 @@ namespace TestRunner
 			return int.Parse(lenValue);
 		}
 
-		private static async Task<ITestCaseSourceItemResult[]> RunTests(ArraySegment<ITestCaseSourceItem> items, IHostingConfiguration hostingConfiguration)
+		private static async Task<TestCaseSourceItemResult[]> RunTests(ArraySegment<(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)> items, IHostingConfiguration hostingConfiguration)
 		{
-			ITestCaseSourceItemResult[] results = new ITestCaseSourceItemResult[items.Count];
+			TestCaseSourceItemResult[] results = new TestCaseSourceItemResult[items.Count];
 			for (int i = 0; i < items.Count; i++)
 			{
-				var item = items[i];
-				results[i] = await item.RunTest(hostingConfiguration).ConfigureAwait(false);
+				var (TestCase, TestSource, Item) = items[i];
+				var (duration, payloadSize) = await Item.RunTest(hostingConfiguration).ConfigureAwait(false);
+				results[i] = new TestCaseSourceItemResult { Duration = duration, PayloadSize = payloadSize, TestCase = TestCase, TestCaseSourceItem = Item, TestSource = TestSource };
 			}
 
 			return results;
