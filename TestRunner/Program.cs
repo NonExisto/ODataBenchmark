@@ -39,11 +39,11 @@ namespace TestRunner
 						Types = gr.GroupBy(t => t.TestSource.TestCaseType)
 							.Select(tg => new
 							{
-								TypeName = tg.Key.ToString(),
+								TestType = tg.Key.ToString(),
 								Stats = tg.Aggregate((duration: 0L, payload: 0L),
 							(cur, sg) => (duration: cur.duration + sg.Duration, payload: cur.payload + sg.PayloadSize))
 							})
-							.Select(v => new { v.TypeName, AvgDuration = v.Stats.duration / (double)_runCount, AvgPayloadSize = v.Stats.payload / (double)_runCount })
+							.Select(v => new { v.TestType, AvgDurationMs = v.Stats.duration / (double)_runCount, AvgPayloadSizeBytes = v.Stats.payload / (double)_runCount })
 							.ToArray()
 					});
 			using (var stream = File.Open("..\\..\\run.json", FileMode.Create, FileAccess.Write, FileShare.None))
