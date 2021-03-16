@@ -35,7 +35,7 @@ namespace TestRunner.Model.TestCases
 				Random rnd = new();
 				for (int i = 0; i < size; i++)
 				{
-					yield return new DefaultTestCaseSourceItem(rnd.Next(), "odata/workitems");
+					yield return new DefaultTestCaseSourceItem(rnd.Next(), "odata/WorkItems");
 				}
 			}
 		}

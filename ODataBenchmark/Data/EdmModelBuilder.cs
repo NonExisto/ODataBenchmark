@@ -16,6 +16,7 @@ namespace ODataBenchmark.DataModel
 			builder.EntitySet<Manager>("Managers");
 			builder.EntitySet<JobTitle>("JobTitles");
 			builder.EntitySet<JobClassification>("JobClassifications");
+			builder.EntitySet<WorkItem>("WorkItems");
 
 			return builder.GetEdmModel();
 		}
