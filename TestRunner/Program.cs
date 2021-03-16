@@ -26,7 +26,7 @@ namespace TestRunner
 
 		private static async Task RunAllTests(IHostingConfiguration hostingConfiguration, (ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)[] tests)
 		{
-			var split = Environment.ProcessorCount >> 2 + Environment.ProcessorCount >> 3; // 6 out 8
+			var split = (Environment.ProcessorCount >> 2) + (Environment.ProcessorCount >> 3); // 6 out 8
 			var blockLen = tests.Length / split;
 			var tasks = Enumerable.Range(0, split).Select(idx =>
 				new ArraySegment<(ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)>(tests, idx * blockLen, blockLen))
@@ -55,7 +55,7 @@ namespace TestRunner
 
 		private static (ITestCase TestCase, ITestCaseSource TestSource, ITestCaseSourceItem Item)[] PrepareTestCases(int seedSize)
 		{
-			ITestCase[] testCases = new ITestCase[] { new AllScopes(), new AllCustomers(), new AllProjects(), new SingleProject(), new AllWorkItems()};
+			ITestCase[] testCases = new ITestCase[] { new AllScopes(), new AllCustomers(), new AllProjects(), new SingleProject(), new AllWorkItems(), new DeepProject()};
 
 			var tests = testCases.SelectMany(tc =>
 					tc.GetTestSources()

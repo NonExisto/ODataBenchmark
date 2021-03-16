@@ -68,8 +68,9 @@ namespace ODataBenchmark.Controllers
 		[HttpGet]
 		public IActionResult AllProjects()
 		{
-			return Ok(_benchmarkContext.Projects.Include(c => c.Members).Include(c => c.Owners).Include(c => c.Scopes).Include(c => c.Superviser).ThenInclude(s => s.JobTitles).
-				Select(p => new
+			return Ok(_benchmarkContext.Projects.Include(c => c.Members).Include(c => c.Owners).Include(c => c.Scopes)
+				.Include(c => c.Superviser).ThenInclude(s => s.JobTitles)
+				.Select(p => new
 				{
 					p.Id,
 					p.Name,
@@ -84,8 +85,9 @@ namespace ODataBenchmark.Controllers
 		[HttpGet]
 		public IActionResult Project(long id)
 		{
-			return Ok(_benchmarkContext.Projects.Where(p => p.Id == id).Include(c => c.Members).Include(c => c.Owners).Include(c => c.Scopes).Include(c => c.Superviser).ThenInclude(s => s.JobTitles).
-				Select(p => new
+			return Ok(_benchmarkContext.Projects.Where(p => p.Id == id).Include(c => c.Members).Include(c => c.Owners).Include(c => c.Scopes)
+				.Include(c => c.Superviser).ThenInclude(s => s.JobTitles)
+				.Select(p => new
 				{
 					p.Id,
 					p.Name,
@@ -94,6 +96,46 @@ namespace ODataBenchmark.Controllers
 					Owners = p.Owners.Select(o => new { o.Id, o.FirstName, o.LastName, o.Login, o.PasswordHash }),
 					Scopes = p.Scopes.Select(s => new { s.Id, s.Name, s.Description }),
 					Superviser = new { p.Superviser.Id, p.Superviser.FirstName, p.Superviser.LastName, p.Superviser.PhoneNumber, JobTitles = p.Superviser.JobTitles.Select(j => new { j.Id, j.Name }) }
+				}));
+		}
+
+
+
+		[HttpGet]
+		public IActionResult DeepProject(long id)
+		{
+			return Ok(_benchmarkContext.Projects.Where(p => p.Id == id).Include(c => c.Scopes)
+				.Include(c => c.Superviser).ThenInclude(s => s.JobTitles).ThenInclude(j => j.JobClassification)
+				.Include(p => p.Superviser).ThenInclude(s => s.Managers).ThenInclude(m => m.Subordinates)
+				.Select(p => new
+				{
+					p.Id,
+					p.Name,
+					p.SuperviserId,
+					Scopes = p.Scopes.Select(s => new { s.Id, s.Name, s.Description }),
+					Superviser = new
+					{
+						p.Superviser.Id,
+						p.Superviser.FirstName,
+						p.Superviser.LastName,
+						p.Superviser.PhoneNumber,
+						JobTitles = p.Superviser.JobTitles.Select(j => new
+						{
+							j.Id,
+							j.Name,
+							JobClassification = new { j.JobClassification.Id, j.JobClassification.Name }
+						}),
+						Managers = p.Superviser.Managers.Select(m => new
+						{
+							m.Id,
+							m.FirstName,
+							m.LastName,
+							m.BirthDate,
+							m.PhoneNumber,
+							Subordinates = m.Subordinates.Select(sb => new { sb.Id, sb.FirstName, sb.LastName, sb.PhoneNumber })
+						})
+
+					}
 				}));
 		}
 	}
