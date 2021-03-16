@@ -11,6 +11,7 @@ namespace TestRunner.Model.TestCases
 		{
 			yield return new ApiTestCaseSource();
 			yield return new ODataTestCaseSource();
+			//yield return new GooseODataTestCaseSource();
 		}
 
 		private class ApiTestCaseSource : ITestCaseSource
@@ -36,6 +37,20 @@ namespace TestRunner.Model.TestCases
 				for (int i = 0; i < size; i++)
 				{
 					yield return new DefaultTestCaseSourceItem(rnd.Next(), "odata/customers?$expand=Owns");
+				}
+			}
+		}
+
+		private class GooseODataTestCaseSource : ITestCaseSource
+		{
+			TestCaseType ITestCaseSource.TestCaseType => TestCaseType.ODataGoose;
+
+			IEnumerable<ITestCaseSourceItem> ITestCaseSource.GetTestCaseItems(int size, int seed)
+			{
+				Random rnd = new();
+				for (int i = 0; i < size; i++)
+				{
+					yield return new DefaultTestCaseSourceItem(rnd.Next(), "odata/customers?$expand=Owns", "text/goose");
 				}
 			}
 		}

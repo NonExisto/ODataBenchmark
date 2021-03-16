@@ -32,7 +32,7 @@ namespace ODataBenchmark.DataModel
 			FillEmployees(count);
 			FilCustomers(count >> 1);
 			FillProjects(count >> 1);
-			FillWorkItems(count << 8);
+			FillWorkItems(count << 4);
 		}
 
 		private void FillWorkItems(int count)

@@ -22,7 +22,7 @@ namespace ODataBenchmark
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddDbContext<BenchmarkContext>(opt => opt.EnableSensitiveDataLogging().UseInMemoryDatabase("BookLists"));
-			services.AddControllers(opt => opt.MaxIAsyncEnumerableBufferLimit = 150000);
+			services.AddControllers(opt => { opt.MaxIAsyncEnumerableBufferLimit = 150000; opt.OutputFormatters.Add(new GooseFormatter()); });
 			services.AddOData(opt => opt.Count().Filter().Expand().Select().OrderBy().SetMaxTop(200).AddModel("odata", EdmModelBuilder.GetEdmModel()));
 		}
 

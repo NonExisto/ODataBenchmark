@@ -3,6 +3,8 @@
 	public enum TestCaseType
 	{
 		Api,
-		Odata
+		Odata,
+		ODataGoose
+
 	}
 }
