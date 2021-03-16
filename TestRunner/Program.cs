@@ -25,14 +25,14 @@ namespace TestRunner
 
 			int seedSize = int.Parse(lenValue);
 
-			TestCase[] testCases = new[] { new AllScopes(seedSize) };
+			ITestCase[] testCases = new[] { new AllScopes() };
 
-			var tests = testCases.SelectMany(tc => tc.GetTestSources().SelectMany(ts => ts.GetTestCaseItems(1000))).OrderBy(tsi => tsi.Order).ToArray();
+			var tests = testCases.SelectMany(tc => tc.GetTestSources().SelectMany(ts => ts.GetTestCaseItems(1000, seedSize))).OrderBy(tsi => tsi.Order).ToArray();
 			var split = Environment.ProcessorCount >> 2;
 
 			var blockLen = tests.Length / split;
 			var tasks = Enumerable.Range(0, split).Select(idx => new ArraySegment<ITestCaseSourceItem>(tests, idx * blockLen, (idx + 1) * blockLen))
-				.Select(segment => RunTests(segment)).ToArray();
+				.Select(segment => RunTests(segment, client)).ToArray();
 			await Task.WhenAll(tasks).ConfigureAwait(false);
 
 			var benchMark = tasks.SelectMany(t => t.Result).GroupBy(r => r.TestCaseSourceItem.TestCase.Name)
@@ -56,13 +56,13 @@ namespace TestRunner
 			}
 		}
 
-		private static async Task<ITestCaseSourceItemResult[]> RunTests(ArraySegment<ITestCaseSourceItem> items)
+		private static async Task<ITestCaseSourceItemResult[]> RunTests(ArraySegment<ITestCaseSourceItem> items, HttpClient client)
 		{
 			ITestCaseSourceItemResult[] results = new ITestCaseSourceItemResult[items.Count];
 			for (int i = 0; i < items.Count; i++)
 			{
 				var item = items[i];
-				results[i] = await item.RunTest().ConfigureAwait(false);
+				results[i] = await item.RunTest(client).ConfigureAwait(false);
 			}
 
 			return results;

@@ -3,13 +3,11 @@ using System.Collections.Generic;
 
 namespace TestRunner.Model.TestCases
 {
-	public class AllScopes : TestCase
+	public class AllScopes : ITestCase
 	{
-		public AllScopes(int seedSize) : base("All Scopes, average length, no expands ", seedSize)
-		{
-		}
+		string ITestCase.Name => "All Scopes, no expands, average size collection";
 
-		public override IEnumerable<ITestCaseSource> GetTestSources()
+		IEnumerable<ITestCaseSource> ITestCase.GetTestSources()
 		{
 			throw new NotImplementedException();
 		}
