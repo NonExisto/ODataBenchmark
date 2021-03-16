@@ -15,15 +15,8 @@ namespace TestRunner
 		private const string _host = "http://localhost:26649/";
 		public async static Task Main()
 		{
-			await Task.Delay(5500).ConfigureAwait(false);
 			HttpClient client = new();
-			HttpRequestMessage startRequest = new(HttpMethod.Get, $"{_host}api/test/StartTest");
-			startRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("plain/text"));
-			var resp = await client.SendAsync(startRequest).ConfigureAwait(false);
-			resp.EnsureSuccessStatusCode();
-			var lenValue = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-			int seedSize = int.Parse(lenValue);
+			var seedSize = await InitTests(client).ConfigureAwait(false);
 
 			ITestCase[] testCases = new[] { new AllScopes() };
 
@@ -50,10 +43,21 @@ namespace TestRunner
 							.ToArray()
 					});
 
-			using (var stream = File.Open("..\\run.json", FileMode.Create, FileAccess.Write, FileShare.None))
-			{
-				await JsonSerializer.SerializeAsync(stream, benchMark, new JsonSerializerOptions { WriteIndented = true }).ConfigureAwait(false);
-			}
+			using var stream = File.Open("..\\run.json", FileMode.Create, FileAccess.Write, FileShare.None);
+			await JsonSerializer.SerializeAsync(stream, benchMark, new JsonSerializerOptions { WriteIndented = true }).ConfigureAwait(false);
+		}
+
+		private static async Task<int> InitTests(HttpClient client)
+		{
+			await Task.Delay(2500).ConfigureAwait(false);
+
+			HttpRequestMessage startRequest = new(HttpMethod.Get, $"{_host}api/test/StartTest");
+			startRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("plain/text"));
+			var resp = await client.SendAsync(startRequest).ConfigureAwait(false);
+			resp.EnsureSuccessStatusCode();
+			var lenValue = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+			return int.Parse(lenValue);
 		}
 
 		private static async Task<ITestCaseSourceItemResult[]> RunTests(ArraySegment<ITestCaseSourceItem> items, HttpClient client)
@@ -67,6 +71,5 @@ namespace TestRunner
 
 			return results;
 		}
-
 	}
 }
