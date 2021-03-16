@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using TestRunner.Model;
 using TestRunner.Model.TestCases;
-using System.Net.Http.Headers;
 using System.IO;
 using System.Text.Json;
 
@@ -12,11 +10,10 @@ namespace TestRunner
 {
 	internal static class Program
 	{
-		private const string _host = "http://localhost:26649/";
 		public async static Task Main()
 		{
-			HttpClient client = new();
-			var seedSize = await InitTests(client).ConfigureAwait(false);
+			IHostingConfiguration hostingConfiguration = new HostingConfiguration();
+			var seedSize = await InitTests(hostingConfiguration).ConfigureAwait(false);
 
 			ITestCase[] testCases = new[] { new AllScopes() };
 
@@ -25,7 +22,7 @@ namespace TestRunner
 
 			var blockLen = tests.Length / split;
 			var tasks = Enumerable.Range(0, split).Select(idx => new ArraySegment<ITestCaseSourceItem>(tests, idx * blockLen, (idx + 1) * blockLen))
-				.Select(segment => RunTests(segment, client)).ToArray();
+				.Select(segment => RunTests(segment, hostingConfiguration)).ToArray();
 			await Task.WhenAll(tasks).ConfigureAwait(false);
 
 			var benchMark = tasks.SelectMany(t => t.Result).GroupBy(r => r.TestCaseSourceItem.TestCase.Name)
@@ -47,26 +44,24 @@ namespace TestRunner
 			await JsonSerializer.SerializeAsync(stream, benchMark, new JsonSerializerOptions { WriteIndented = true }).ConfigureAwait(false);
 		}
 
-		private static async Task<int> InitTests(HttpClient client)
+		private static async Task<int> InitTests(IHostingConfiguration hostingConfiguration)
 		{
 			await Task.Delay(2500).ConfigureAwait(false);
 
-			HttpRequestMessage startRequest = new(HttpMethod.Get, $"{_host}api/test/StartTest");
-			startRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("plain/text"));
-			var resp = await client.SendAsync(startRequest).ConfigureAwait(false);
+			var resp = await hostingConfiguration.SendAsync("api/test/StartTest", "plain/text").ConfigureAwait(false);
 			resp.EnsureSuccessStatusCode();
 			var lenValue = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
 
 			return int.Parse(lenValue);
 		}
 
-		private static async Task<ITestCaseSourceItemResult[]> RunTests(ArraySegment<ITestCaseSourceItem> items, HttpClient client)
+		private static async Task<ITestCaseSourceItemResult[]> RunTests(ArraySegment<ITestCaseSourceItem> items, IHostingConfiguration hostingConfiguration)
 		{
 			ITestCaseSourceItemResult[] results = new ITestCaseSourceItemResult[items.Count];
 			for (int i = 0; i < items.Count; i++)
 			{
 				var item = items[i];
-				results[i] = await item.RunTest(client).ConfigureAwait(false);
+				results[i] = await item.RunTest(hostingConfiguration).ConfigureAwait(false);
 			}
 
 			return results;
