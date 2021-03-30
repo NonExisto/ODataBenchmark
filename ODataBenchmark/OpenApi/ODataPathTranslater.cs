@@ -14,14 +14,14 @@ namespace ODataBenchmark.OpenApi
     {
         public static ODataPath Translate(this ODataPathTemplate pathTemplate)
         {
-            if (pathTemplate.Segments.Count == 0)
+            if (pathTemplate.Count == 0)
             {
                 // It's service root, so far, let's skip it.
                 return null;
             }
 
             IList<ODataSegment> newSegments = new List<ODataSegment>();
-            foreach (var segment in pathTemplate.Segments)
+            foreach (var segment in pathTemplate)
             {
                 switch (segment.Kind)
                 {
@@ -52,9 +52,9 @@ namespace ODataBenchmark.OpenApi
                     case ODataSegmentKind.Property:
                         // TODO: 
                         return null;
-                        //PropertySegmentTemplate property = (PropertySegmentTemplate)segment;
-                        //newSegments.Add(property.ConvertTo());
-                        //break;
+                    //PropertySegmentTemplate property = (PropertySegmentTemplate)segment;
+                    //newSegments.Add(property.ConvertTo());
+                    //break;
 
                     case ODataSegmentKind.Navigation:
                         NavigationSegmentTemplate navigation = (NavigationSegmentTemplate)segment;
@@ -83,21 +83,21 @@ namespace ODataBenchmark.OpenApi
 
                     case ODataSegmentKind.Value:
                         return null;
-                        //ValueSegmentTemplate value = (ValueSegmentTemplate)segment;
-                        //newSegments.Add(value.ConvertTo());
-                        //break;
+                    //ValueSegmentTemplate value = (ValueSegmentTemplate)segment;
+                    //newSegments.Add(value.ConvertTo());
+                    //break;
 
                     case ODataSegmentKind.Ref:
                         return null;
-                        //KeySegmentTemplate key = (KeySegmentTemplate)segment;
-                        //newSegments.Add(key.ConvertTo());
-                        //break;
+                    //KeySegmentTemplate key = (KeySegmentTemplate)segment;
+                    //newSegments.Add(key.ConvertTo());
+                    //break;
 
                     case ODataSegmentKind.NavigationLink:
                         return null;
-                        //NavigationLinkSegmentTemplate navigationLink = (NavigationLinkSegmentTemplate)segment;
-                        //newSegments.Add(navigationLink.ConvertTo());
-                        //break;
+                    //NavigationLinkSegmentTemplate navigationLink = (NavigationLinkSegmentTemplate)segment;
+                    //newSegments.Add(navigationLink.ConvertTo());
+                    //break;
 
                     case ODataSegmentKind.Count:
                         CountSegmentTemplate count = (CountSegmentTemplate)segment;
@@ -106,15 +106,15 @@ namespace ODataBenchmark.OpenApi
 
                     case ODataSegmentKind.PathTemplate:
                         return null;
-                        //KeySegmentTemplate key = (KeySegmentTemplate)segment;
-                        //newSegments.Add(key.ConvertTo());
-                        //break;
+                    //KeySegmentTemplate key = (KeySegmentTemplate)segment;
+                    //newSegments.Add(key.ConvertTo());
+                    //break;
 
                     case ODataSegmentKind.Dynamic:
                         return null;
-                        //KeySegmentTemplate key = (KeySegmentTemplate)segment;
-                        //newSegments.Add(key.ConvertTo());
-                        //break;
+                    //KeySegmentTemplate key = (KeySegmentTemplate)segment;
+                    //newSegments.Add(key.ConvertTo());
+                    //break;
 
                     default:
                         throw new NotSupportedException();

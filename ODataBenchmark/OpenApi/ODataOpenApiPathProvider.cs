@@ -30,4 +30,5 @@ namespace ODataBenchmark.OpenApi
             _paths.Add(path);
         }
     }
+
 }

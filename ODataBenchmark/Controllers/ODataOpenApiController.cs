@@ -22,201 +22,203 @@ using ODataBenchmark.OpenApi;
 
 namespace ODataRoutingSample.Controllers
 {
-    public class ODataOpenApiController : ControllerBase
-    {
-        private EndpointDataSource _dataSource;
+	public class ODataOpenApiController : ControllerBase
+	{
+		private EndpointDataSource _dataSource;
 
-        public ODataOpenApiController(EndpointDataSource dataSource)
-        {
-            _dataSource = dataSource;
-        }
+		public ODataOpenApiController(EndpointDataSource dataSource)
+		{
+			_dataSource = dataSource;
+		}
 
-        [HttpGet("$openapi")]
-        public ContentResult GetOpenApi()
-        {
-            OpenApiDocument document = CreateDocument(string.Empty);
-            return CreateContent(document);
-        }
+		[HttpGet("$openapi")]
+		public ContentResult GetOpenApi()
+		{
+			OpenApiDocument document = CreateDocument(string.Empty);
+			return CreateContent(document);
+		}
 
-        [HttpGet("v1/$openapi")]
-        public ContentResult GetV1OpenApi()
-        {
-            OpenApiDocument document = CreateDocument("v1");
-            return CreateContent(document);
-        }
+		[HttpGet("v1/$openapi")]
+		public ContentResult GetV1OpenApi()
+		{
+			OpenApiDocument document = CreateDocument("v1");
+			return CreateContent(document);
+		}
 
-        [HttpGet("v2{data}/$openapi")]
-        public ContentResult GetV2OpenApi(string data)
-        {
-            OpenApiDocument document = CreateDocument("v2{data}");
-            return CreateContent(document);
-        }
+		[HttpGet("v2{data}/$openapi")]
+		public ContentResult GetV2OpenApi(string data)
+		{
+			OpenApiDocument document = CreateDocument("v2{data}");
+			return CreateContent(document);
+		}
 
-        private ContentResult CreateContent(OpenApiDocument document)
-        {
-            HttpContext httpContext = Request.HttpContext;
-            (string contentType, OpenApiSpecVersion openApiSpecVersion) = GetContentTypeAndVersion(httpContext);
-            httpContext.Response.Headers["Content-Type"] = contentType;
+		private ContentResult CreateContent(OpenApiDocument document)
+		{
+			HttpContext httpContext = Request.HttpContext;
+			(string contentType, OpenApiSpecVersion openApiSpecVersion) = GetContentTypeAndVersion(httpContext);
+			httpContext.Response.Headers["Content-Type"] = contentType;
 
-            string output;
+			string output;
 
-            if (openApiSpecVersion == OpenApiSpecVersion.OpenApi3_0)
-            {
-                if (contentType == "application/json")
-                {
-                    output = document.SerializeAsJson(OpenApiSpecVersion.OpenApi3_0);
-                }
-                else
-                {
-                    output = document.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0);
-                }
-            }
-            else
-            {
-                if (contentType == "application/json")
-                {
-                    output = document.SerializeAsJson(OpenApiSpecVersion.OpenApi2_0);
-                }
-                else
-                {
-                    output = document.SerializeAsYaml(OpenApiSpecVersion.OpenApi2_0);
-                }
-            }
+			if (openApiSpecVersion == OpenApiSpecVersion.OpenApi3_0)
+			{
+				if (contentType == "application/json")
+				{
+					output = document.SerializeAsJson(OpenApiSpecVersion.OpenApi3_0);
+				}
+				else
+				{
+					output = document.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0);
+				}
+			}
+			else
+			{
+				if (contentType == "application/json")
+				{
+					output = document.SerializeAsJson(OpenApiSpecVersion.OpenApi2_0);
+				}
+				else
+				{
+					output = document.SerializeAsYaml(OpenApiSpecVersion.OpenApi2_0);
+				}
+			}
 
-            return base.Content(output, contentType);
-        }
+			return base.Content(output, contentType);
+		}
 
-        private OpenApiDocument CreateDocument(string prefixName)
-        {
-            IDictionary<string, ODataPath> tempateToPathDict = new Dictionary<string, ODataPath>();
-            ODataOpenApiPathProvider provider = new ODataOpenApiPathProvider();
-            IEdmModel model = null;
-            foreach (var endpoint in _dataSource.Endpoints)
-            {
-                IODataRoutingMetadata metadata = endpoint.Metadata.GetMetadata<IODataRoutingMetadata>();
-                if (metadata == null)
-                {
-                    continue;
-                }
+		private OpenApiDocument CreateDocument(string prefixName)
+		{
+			IDictionary<string, ODataPath> tempateToPathDict = new Dictionary<string, ODataPath>();
+			ODataOpenApiPathProvider provider = new ODataOpenApiPathProvider();
+			IEdmModel model = null;
+			foreach (var endpoint in _dataSource.Endpoints)
+			{
+				IODataRoutingMetadata metadata = endpoint.Metadata.GetMetadata<IODataRoutingMetadata>();
+				if (metadata == null)
+				{
+					continue;
+				}
 
-                if (metadata.Prefix != prefixName)
-                {
-                    continue;
-                }
-                model = metadata.Model;
+				if (metadata.Prefix != prefixName)
+				{
+					continue;
+				}
+				model = metadata.Model;
 
-                RouteEndpoint routeEndpoint = endpoint as RouteEndpoint;
-                if (routeEndpoint == null)
-                {
-                    continue;
-                }
+				RouteEndpoint routeEndpoint = endpoint as RouteEndpoint;
+				if (routeEndpoint == null)
+				{
+					continue;
+				}
 
-                // get rid of the prefix
-                int length = prefixName.Length;
-                string routePathTemplate = routeEndpoint.RoutePattern.RawText.Substring(length);
-                routePathTemplate = routePathTemplate.StartsWith("/") ? routePathTemplate : "/" + routePathTemplate;
+				// get rid of the prefix
+				int length = prefixName.Length;
+				string routePathTemplate = routeEndpoint.RoutePattern.RawText.Substring(length);
+				routePathTemplate = routePathTemplate.StartsWith("/") ? routePathTemplate : "/" + routePathTemplate;
 
-                if (tempateToPathDict.TryGetValue(routePathTemplate, out ODataPath pathValue))
-                {
-                    string method = GetHttpMethod(metadata, endpoint);
-                    pathValue.HttpMethods.Add(method);
-                    continue;
-                }
+				if (tempateToPathDict.TryGetValue(routePathTemplate, out ODataPath pathValue))
+				{
+					var methods = GetHttpMethods(endpoint);
+					foreach (var method in methods)
+					{
+						pathValue.HttpMethods.Add(method);
+					}
+					continue;
+				}
 
-                var path = metadata.Template.Translate();
-                if (path == null)
-                {
-                    continue;
-                }
+				var path = metadata.Template.Translate();
+				if (path == null)
+				{
+					continue;
+				}
 
-                path.PathTemplate = routePathTemplate;
-                provider.Add(path);
+				path.PathTemplate = routePathTemplate;
+				provider.Add(path);
 
-                string method1 = GetHttpMethod(metadata, endpoint);
-                path.HttpMethods.Add(method1);
-                tempateToPathDict[routePathTemplate] = path;
-            }
+				var methods1 = GetHttpMethods(endpoint);
+				foreach (var method in methods1)
+				{
+					path.HttpMethods.Add(method);
+				}
 
-            OpenApiConvertSettings settings = new OpenApiConvertSettings
-            {
-                PathProvider = provider,
-                ServiceRoot = BuildAbsolute()
-            };
+				tempateToPathDict[routePathTemplate] = path;
+			}
 
-            return model.ConvertToOpenApi(settings);
-        }
+			OpenApiConvertSettings settings = new OpenApiConvertSettings
+			{
+				PathProvider = provider,
+				ServiceRoot = BuildAbsolute()
+			};
 
-        internal static (string, OpenApiSpecVersion) GetContentTypeAndVersion(HttpContext context)
-        {
-            Contract.Assert(context != null);
+			return model.ConvertToOpenApi(settings);
+		}
 
-            OpenApiSpecVersion specVersion = OpenApiSpecVersion.OpenApi3_0; // by default
-            // $format=application/json;version=2.0
-            // $format=application/yaml;version=2.0
-            // accept=application/json;version3.0
-            HttpRequest request = context.Request;
+		internal static (string, OpenApiSpecVersion) GetContentTypeAndVersion(HttpContext context)
+		{
+			Contract.Assert(context != null);
 
-            string dollarFormatValue = null;
-            IQueryCollection queryCollection = request.Query;
-            if (queryCollection.ContainsKey("$format"))
-            {
-                StringValues dollarFormat = queryCollection["$format"];
-                dollarFormatValue = dollarFormat.FirstOrDefault();
-            }
+			OpenApiSpecVersion specVersion = OpenApiSpecVersion.OpenApi3_0; // by default
+																			// $format=application/json;version=2.0
+																			// $format=application/yaml;version=2.0
+																			// accept=application/json;version3.0
+			HttpRequest request = context.Request;
 
-            if (dollarFormatValue != null)
-            {
-                MediaTypeHeaderValue parsedValue;
-                bool success = MediaTypeHeaderValue.TryParse(dollarFormatValue, out parsedValue);
-                if (success)
-                {
-                    NameValueHeaderValue nameValueHeaderValue = parsedValue.Parameters.FirstOrDefault(p => p.Name == "version");
-                    if (nameValueHeaderValue != null)
-                    {
-                        string version = nameValueHeaderValue.Value.Value;
-                        if (version == "2.0")
-                        {
-                            specVersion = OpenApiSpecVersion.OpenApi2_0;
-                        }
-                    }
+			string dollarFormatValue = null;
+			IQueryCollection queryCollection = request.Query;
+			if (queryCollection.ContainsKey("$format"))
+			{
+				StringValues dollarFormat = queryCollection["$format"];
+				dollarFormatValue = dollarFormat.FirstOrDefault();
+			}
 
-                    if (parsedValue.MediaType == "application/yaml")
-                    {
-                        return ("application/yaml", specVersion);
-                    }
+			if (dollarFormatValue != null)
+			{
+				MediaTypeHeaderValue parsedValue;
+				bool success = MediaTypeHeaderValue.TryParse(dollarFormatValue, out parsedValue);
+				if (success)
+				{
+					NameValueHeaderValue nameValueHeaderValue = parsedValue.Parameters.FirstOrDefault(p => p.Name == "version");
+					if (nameValueHeaderValue != null)
+					{
+						string version = nameValueHeaderValue.Value.Value;
+						if (version == "2.0")
+						{
+							specVersion = OpenApiSpecVersion.OpenApi2_0;
+						}
+					}
 
-                    return ("application/json", specVersion);
-                }
-            }
+					if (parsedValue.MediaType == "application/yaml")
+					{
+						return ("application/yaml", specVersion);
+					}
 
-            // default
-            return ("application/json", OpenApiSpecVersion.OpenApi3_0);
-        }
+					return ("application/json", specVersion);
+				}
+			}
 
-        private static string GetHttpMethod(IODataRoutingMetadata metadata, Endpoint endpoint)
-        {
-            string method = metadata.HttpMethods.FirstOrDefault();
-            if (method != null)
-            {
-                return method;
-            }
+			// default
+			return ("application/json", OpenApiSpecVersion.OpenApi3_0);
+		}
 
-            HttpMethodMetadata methodMetadata = endpoint.Metadata.GetMetadata<HttpMethodMetadata>();
-            if (methodMetadata != null)
-            {
-                return methodMetadata.HttpMethods.First();
-            }
+		private static IEnumerable<string> GetHttpMethods(Endpoint endpoint)
+		{
+			HttpMethodMetadata methodMetadata = endpoint.Metadata.GetMetadata<HttpMethodMetadata>();
+			if (methodMetadata != null)
+			{
+				return methodMetadata.HttpMethods;
+			}
 
-            throw new Exception();
-        }
+			throw new Exception();
+		}
 
-        private Uri BuildAbsolute()
-        {
-            HttpRequest request = Request;
-            string wholeRequest = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path);
-            int index = wholeRequest.IndexOf("/$openapi");
-            string path = wholeRequest.Substring(0, index);
-            return new Uri(path);
-        }
-    }
+		private Uri BuildAbsolute()
+		{
+			HttpRequest request = Request;
+			string wholeRequest = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path);
+			int index = wholeRequest.IndexOf("/$openapi");
+			string path = wholeRequest.Substring(0, index);
+			return new Uri(path);
+		}
+
+	}
 }

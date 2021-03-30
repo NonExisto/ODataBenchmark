@@ -48,7 +48,7 @@ namespace TestRunner
 							.Where(v => v.Size > 0d)
 							.Select(v => new { v.TestType, AvgDurationMs = v.Stats.duration / v.Size, AvgPayloadSizeBytes = v.Stats.payload / v.Size })
 							.ToArray()
-					});
+					}).OrderBy(x => x.Name);
 			using (var stream = File.Open("..\\..\\run.json", FileMode.Create, FileAccess.Write, FileShare.None))
 			{
 				await JsonSerializer.SerializeAsync(stream, benchMark, new JsonSerializerOptions { WriteIndented = true }).ConfigureAwait(false);
